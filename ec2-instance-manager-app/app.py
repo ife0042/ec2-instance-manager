@@ -209,6 +209,6 @@ def stop_instance(instance_id):
         return jsonify({'status': 'success', 'message': 'Instance stopping'})
     except ClientError as e:
         return jsonify({'status': 'error', 'message': str(e)})
-
+    
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=4999, debug=True)
