@@ -25,7 +25,7 @@ Please note that this web application will be hosted on an EC2 instance in the A
 - AWS Account (Free Tier eligible)
 - Terraform installed (v1.0.0+)
 - Docker installed (for running the application) [optional]
-- Python 3.8+
+- Python 3.10+
 
 ## Server Deployment (ec2-instance-manager-server)
 The first step is to prepare the server that will host the web application.
