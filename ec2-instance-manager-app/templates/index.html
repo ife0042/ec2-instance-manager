@@ -5,19 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EC2 Instance Manager</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
     <style>
         .status-badge {
-            font-size: 1.2em;
-            min-width: 100px;
+            font-size: 1em;
+            min-width: 100%;
         }
         .server-ip {
             font-family: monospace;
             font-size: 1.2em;
         }
+        .status-metric {
+            font-family: monospace;
+            font-size: 1em;
+        }
         @media (max-width: 576px) {
             .btn {
                 width: 100%;
             }
+        }
+        
+        /* Add styles for the collapse indicators */
+        [data-bs-toggle="collapse"] {
+            cursor: pointer;
+        }
+        
+        [data-bs-toggle="collapse"] i {
+            transition: transform 0.2s ease-in-out;
+        }
+        
+        [data-bs-toggle="collapse"][aria-expanded="true"] i {
+            transform: rotate(180deg);
         }
     </style>
 </head>
@@ -25,12 +43,63 @@
     <div class="container mt-5">
         <h1 class="mb-4">EC2 Instance Manager</h1>
         
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Instance Configuration</h5>
-                <div class="mb-3">
-                    <label for="instance-id" class="form-label">Instance ID</label>
-                    <input type="text" class="form-control" id="instance-id" placeholder="Enter instance ID (leave empty for default)">
+        <!-- Configuration Management Section -->
+        <div class="card mb-4">
+            <div class="card-header" role="button" data-bs-toggle="collapse" data-bs-target="#addConfigSection" aria-expanded="false">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Add New Configuration</h5>
+                    <small>Here you can enter the instance ID of the target machine you want to manage or the S3 bucket and key of the file/object containing the target machine's instance ID</small>
+                    <i class="bi bi-chevron-down"></i>
+                </div>
+            </div>
+            <div class="collapse" id="addConfigSection">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="configType" id="directInstanceId" value="instance" checked>
+                                <label class="form-check-label" for="directInstanceId">
+                                    Direct Instance ID
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="configType" id="s3Config" value="s3">
+                                <label class="form-check-label" for="s3Config">
+                                    S3 Configuration
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6" id="instanceIdForm">
+                            <input type="text" class="form-control mb-2" id="new-instance-id" placeholder="Enter Instance ID">
+                        </div>
+                        
+                        <div class="col-md-6 d-none" id="s3Form">
+                            <input type="text" class="form-control mb-2" id="s3-bucket" placeholder="S3 Bucket Name">
+                            <input type="text" class="form-control mb-2" id="s3-key" placeholder="S3 Key">
+                        </div>
+                        
+                        <div class="col-12">
+                            <button class="btn btn-primary" id="save-config-btn">Save Configuration</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Saved Configurations Section -->
+        <div class="card mb-4">
+            <div class="card-header" role="button" data-bs-toggle="collapse" data-bs-target="#savedConfigSection" aria-expanded="true">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Saved Configurations</h5>
+                    <i class="bi bi-chevron-down"></i>
+                </div>
+            </div>
+            <div class="collapse show" id="savedConfigSection">
+                <div class="card-body">
+                    <div class="list-group" id="saved-configs">
+                        <!-- Configurations will be loaded here -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -38,21 +107,22 @@
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">Instance Status</h5>
-                <div class="row align-items-center">
-                    <div class="col-md-4">
-                        <span class="status-badge badge" id="status-badge">Checking...</span>
+                <div id="instance-status-info" class="col-md-12 text-center my-3 status-metric"></div>
+                <div id="instance-status" class="d-none">
+                    <div class="row">
+                        <div class="status-metric col-md-4">Instance ID: </div><span class="col-md-8 status-metric" id="instance-id">Checking...</span>
                     </div>
-                    <div class="col-md-8">
-                        <div class="server-ip">
-                            IP: <a href="#" id="server-ip" target="_blank">Checking...</a>
-                        </div>
+                    <div class="row">
+                        <div class="status-metric col-md-4">Public IP: </div><a href="#" class="col-md-8 status-metric" id="server-ip" target="_blank">Checking...</a>
                     </div>
-                </div>
-                
-                <div class="mt-4">
-                    <button class="btn btn-success d-block d-sm-inline mb-4 me-2" id="start-btn" disabled>Start Server</button>
-                    <button class="btn btn-danger d-block d-sm-inline mb-4 me-2" id="stop-btn" disabled>Stop Server</button>
-                    <button class="btn btn-info d-block d-sm-inline mb-4" id="refresh-btn">Refresh Status</button>
+                    <div class="row">
+                        <div class="status-metric col-md-4">Status: </div><span class="col-md-8 status-badge badge" id="status-badge">Checking...</span>
+                    </div>
+                    <div class="mt-4">
+                        <button class="btn btn-success d-block d-sm-inline mb-4 me-2" id="start-btn" disabled>Start Server</button>
+                        <button class="btn btn-danger d-block d-sm-inline mb-4 me-2" id="stop-btn" disabled>Stop Server</button>
+                        <button class="btn btn-info d-block d-sm-inline mb-4" id="refresh-btn">Refresh Status</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -71,27 +141,22 @@
 
     <script>
         // Add Bootstrap JS for toast functionality and wait for it to load
-        const toastScript = document.createElement('script');
-        toastScript.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js';
-        toastScript.onload = () => {
+        const bootstrapScript = document.createElement('script');
+        bootstrapScript.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js';
+        bootstrapScript.onload = () => {
             // Initialize everything after Bootstrap is loaded
             initializeApp();
         };
-        document.head.appendChild(toastScript);
+        document.head.appendChild(bootstrapScript);
+
+        let INSTANCE_ID = null;
 
         function initializeApp() {
             const MAX_LOG_ENTRIES = 1000;
             const actionLog = document.getElementById('action-log');
-            const instanceIdInput = document.getElementById('instance-id');
-
-            function getInstanceIdParam() {
-                const instanceId = instanceIdInput.value.trim();
-                return instanceId ? `?instance_id=${instanceId}` : '';
-            }
 
             function addLogEntry(action, status="") {
                 const now = new Date();
-                console.log(now);
                 const timeString = now.toLocaleString('en-US', { 
                     timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
                     dateStyle: 'medium',
@@ -101,9 +166,6 @@
                 
                 const logEntry = document.createElement('li');
                 logEntry.className = 'mb-2';
-                // logEntry.innerHTML = `
-                //     <small class="text-muted">[${timeString} (${timezone})] [${status}] ${action}</small>
-                // `;
                 logEntry.innerHTML = `
                     <small class="${status==='success' ? 'text-success' : 'text-danger'}">[${now}] [${status}] ${action}</small>
                 `;
@@ -116,8 +178,17 @@
                 }
             }
 
-            function updateStatus() {
-                fetch(`/api/status${getInstanceIdParam()}`)
+            function updateStatus(message="") {
+
+                document.getElementById('instance-status').classList.remove('d-none');
+                if (!INSTANCE_ID) {
+                    document.getElementById('instance-status').classList.add('d-none');
+                    document.getElementById('instance-status-info').textContent = message==''?'No instance ID selected':message;
+                    addLogEntry('No instance ID selected', 'failed');
+                    return;
+                }
+                document.getElementById('instance-status-info').textContent = message;
+                fetch(`/api/status/${INSTANCE_ID}`)
                     .then(response => response.json())
                     .then(data => {
                         if (data.status === 'success') {
@@ -125,7 +196,7 @@
                             addLogEntry('Status check successful', 'success');
                         } else {
                             showError(data.message);
-                            addLogEntry('Status check failed', 'failed');
+                            addLogEntry(`Status check failed: ${data.message}`, 'failed');
                         }
                     })
                     .catch(error => {
@@ -136,14 +207,17 @@
 
             function updateUI(data) {
                 const statusBadge = document.getElementById('status-badge');
+                const instanceId = document.getElementById('instance-id');
                 const startBtn = document.getElementById('start-btn');
                 const stopBtn = document.getElementById('stop-btn');
                 const serverIp = document.getElementById('server-ip');
 
                 // Update status badge
-                statusBadge.textContent = data.state;
+                statusBadge.textContent = data.instance_info.state;
                 statusBadge.className = 'status-badge badge';
-                switch (data.state) {
+                // update instance id
+                instanceId.textContent = data.instance_info.instance_id;
+                switch (data.instance_info.state) {
                     case 'running':
                         statusBadge.classList.add('bg-success');
                         startBtn.disabled = true;
@@ -161,9 +235,9 @@
                 }
 
                 // Update IP address
-                if (data.public_ip !== 'Not available') {
-                    serverIp.textContent = data.public_ip;
-                    serverIp.href = `http://${data.public_ip}`;
+                if (data.instance_info.public_ip !== 'Not available') {
+                    serverIp.textContent = data.instance_info.public_ip;
+                    serverIp.href = `http://${data.instance_info.public_ip}`;
                 } else {
                     serverIp.textContent = 'Not available';
                     serverIp.href = '#';
@@ -176,7 +250,7 @@
             }
 
             document.getElementById('start-btn').addEventListener('click', () => {
-                fetch(`/api/start${getInstanceIdParam()}`)
+                fetch(`/api/start/${INSTANCE_ID}`)
                     .then(response => response.json())
                     .then(data => {
                         if (data.status === 'success') {
@@ -190,7 +264,7 @@
             });
 
             document.getElementById('stop-btn').addEventListener('click', () => {
-                fetch(`/api/stop${getInstanceIdParam()}`)
+                fetch(`/api/stop/${INSTANCE_ID}`)
                     .then(response => response.json())
                     .then(data => {
                         if (data.status === 'success') {
@@ -205,18 +279,124 @@
 
             document.getElementById('refresh-btn').addEventListener('click', updateStatus);
 
-            // Add instance ID change handler
-            instanceIdInput.addEventListener('change', updateStatus);
-            
-            // Add Enter key handler for instance ID input
-            instanceIdInput.addEventListener('keyup', (event) => {
-                if (event.key === 'Enter') {
-                    updateStatus();
+            // Configuration management
+            const configType = document.getElementsByName('configType');
+            const instanceIdForm = document.getElementById('instanceIdForm');
+            const s3Form = document.getElementById('s3Form');
+            const savedConfigs = document.getElementById('saved-configs');
+
+            // Toggle between instance ID and S3 configuration forms
+            configType.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    if (e.target.value === 'instance') {
+                        instanceIdForm.classList.remove('d-none');
+                        s3Form.classList.add('d-none');
+                    } else {
+                        instanceIdForm.classList.add('d-none');
+                        s3Form.classList.remove('d-none');
+                    }
+                });
+            });
+
+            // Load saved configurations
+            function loadSavedConfigs() {
+                INSTANCE_ID = null;
+                fetch('/api/config')
+                    .then(response => response.json())
+                    .then(configs => {
+                        savedConfigs.innerHTML = '';
+                        configs.forEach((config, index) => {
+                            const configItem = document.createElement('button');
+                            configItem.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
+                            
+                            let configText = config.instance_id ? 
+                                `Instance ID: ${config.instance_id}` :
+                                `S3: ${config.s3_bucket}/${config.s3_key}`;
+                            
+                            configItem.innerHTML = `
+                                <span>${configText}</span>
+                                <div>
+                                    <button class="btn btn-sm btn-primary me-2 select-config" data-id="${config.id}">Select</button>
+                                    <button class="btn btn-sm btn-danger delete-config" data-id="${config.id}">Delete</button>
+                                </div>
+                            `;
+                            savedConfigs.appendChild(configItem);
+                        });
+
+                        // Select the last viewed configuration: configs are sorted by last_viewed
+                        if (configs.length > 0) {
+                            trigger_select_config(configs[0].id);
+                        }
+                        else {
+                            updateStatus(message="No configurations found");
+                        }
+                    });
+            }
+
+            // Save new configuration
+            document.getElementById('save-config-btn').addEventListener('click', () => {
+                const isInstanceId = document.getElementById('directInstanceId').checked;
+                let config;
+                
+                if (isInstanceId) {
+                    const instanceId = document.getElementById('new-instance-id').value.trim();
+                    if (!instanceId) return;
+                    config = { instance_id: instanceId };
+                } else {
+                    const bucket = document.getElementById('s3-bucket').value.trim();
+                    const key = document.getElementById('s3-key').value.trim();
+                    if (!bucket || !key) return;
+                    config = { s3_bucket: bucket, s3_key: key };
+                }
+
+                fetch('/api/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                })
+                .then(response => response.json())
+                .then(() => {
+                    loadSavedConfigs();
+                    // Clear form
+                    document.getElementById('new-instance-id').value = '';
+                    document.getElementById('s3-bucket').value = '';
+                    document.getElementById('s3-key').value = '';
+                });
+            });
+
+            function trigger_select_config(config_id) {
+                INSTANCE_ID = null;
+                fetch(`/api/config/select/${config_id}`, { method: 'POST' })
+                .then(response => response.json())
+                .then((data) => {
+                    if (data.status === 'success') {
+                        INSTANCE_ID = data.instance_id;
+                        updateStatus();
+                    }
+                    else {
+                        updateStatus(message=data.message);
+                        showError(data.message);
+                        addLogEntry(`Failed to detect instance: ${data.message}`, 'failed');
+                    }
+                });
+            }
+
+            // Event delegation for select/delete buttons
+            savedConfigs.addEventListener('click', (e) => {
+                const config_id = e.target.dataset.id ? parseInt(e.target.dataset.id) : null;
+                if (e.target.classList.contains('select-config')) {
+                    // Update the active configuration and refresh status
+                    // reset instance id
+                    trigger_select_config(config_id);
+                } else if (e.target.classList.contains('delete-config')) {
+                    fetch(`/api/config/delete/${config_id}`, { method: 'DELETE' })
+                        .then(() => loadSavedConfigs());
                 }
             });
 
-            // Initial status check
-            updateStatus();
+            // Initial load of saved configurations & status check
+            loadSavedConfigs();
+
             // Periodic status update
             setInterval(updateStatus, 30000);
         }

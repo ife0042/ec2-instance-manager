@@ -5,7 +5,7 @@ After the completion of this setup, you will be able to access a web application
 
 One of the benefit of this web application is the ability to stop the EC2 instance when it is not in use. This will help you save money on AWS. Therefore, if you have and EC2 instance that does not require 100% availability, you can stop it when it is not in use.
 
-Please note that this web application will be hosted on an EC2 instance using AWS Free Tier as defined in the Terraform configuration.
+Please note that this web application will be hosted on an EC2 instance in the AWS Free Tier. Also, ensure that this web application is hosted in an instance that is created with the account that is used to create the target EC2 instance.
 
 ## Project Structure
 
