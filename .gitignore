@@ -211,3 +211,4 @@ terraform.rc
 .DS_Store
 public_ip.txt
 .sec.*
+*.db
