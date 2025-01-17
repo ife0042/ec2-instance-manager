@@ -77,66 +77,52 @@ ssh -i ec2-instance-manager-key.pem ubuntu@$(cat public_ip.txt)
 ## Application Deployment (ec2-instance-manager-app)
 Now that you have connected to the EC2 instance, you can deploy the application.
 Please note that the application is assigned to the port 4999. This is to avoid conflicts with other application that might be using the default Flask port 5000.
-The first step is to clone the repository in host machine and install the dependencies.
+
+1. The first step is to clone the repository in host machine and install the dependencies.
 
 ```bash
 git clone https://github.com/ife0042/ec2-instance-manager.git
 cd ec2-instance-manager/ec2-instance-manager-app
 ```
 
-Install and upgrade system packages:
+2. Install and upgrade system packages:
 ```bash
 sudo apt update && sudo apt upgrade -y
 ```
 
-There are two ways to deploy the application:
-1. In a Docker container
-2. Directly in the host machine
-
-### In a Docker container
-
-1. Install Docker in the host machine:
-   ```bash
-   sudo apt install docker.io -y
-   ```
-
-2. Build and run the Docker container:
-   ```bash
-   cd ../ec2-instance-manager-app
-   docker build -t ec2-instance-manager-app .
-   docker run -d -p 4999:4999 ec2-instance-manager-app env AWS_ACCESS_KEY_ID=xxxxxxxxx AWS_SECRET_ACCESS_KEY=xxxxxxxxx
-   ```
-
-2. Access the application at `http://localhost:4999`
-
-3. Make the application available over the internet:
-
-
-
-### Directly in the host machine
-
-1. Install and upgrade system packages:
+3. Install and upgrade system packages:
    ```bash
    sudo apt update && sudo apt upgrade -y
    ```
 
-2. Install Python 3.8:
+4. Reboot the system:
+   ```bash
+   sudo reboot
+   ```
+
+5. Install Python 3.10:
    ```bash
    sudo apt install python3.10 python3-pip -y
    ```
 
-3. Install the dependencies:
+6. Install the dependencies:
    ```bash
    cd ../ec2-instance-manager-app/app
    pip3 install -r requirements.txt
    ```
 
-4. UFW (Ubuntu Firewall): Allow traffic on port 4999:
+7. Set the AWS secret keys as environment variables in the host machine:
    ```bash
-   sudo ufw allow 4999
+   export AWS_ACCESS_KEY_ID=xxxxxxxxx
+   export AWS_SECRET_ACCESS_KEY=xxxxxxxxx
    ```
 
-5. Run the application using Gunicorn:
+<!-- 8. UFW (Ubuntu Firewall): Allow traffic on port 4999:
+   ```bash
+   sudo ufw allow 4999
+   ``` -->
+
+8. Run the application using Gunicorn:
    ```bash
    gunicorn --bind 0.0.0.0:4999 app:app
    ```
