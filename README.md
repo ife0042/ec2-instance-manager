@@ -40,7 +40,6 @@ The first step is to prepare the server that will host the web application.
 1. Clone this repository:
    ```bash
    git clone https://github.com/ife0042/ec2-instance-manager.git
-   cd ec2-instance-manager-server
    ```
 
 2. Set AWS Access Keys:
@@ -53,17 +52,22 @@ After obtaining the access keys, set them in the environment variables of your l
 
 ### Deploy Infrastructure
 Once the AWS access keys are set, you can deploy the infrastructure using terraform by running the following commands:
-1. Initialize Terraform:
+1. Change directory to the ec2-instance-manager-server directory:
+   ```bash
+   cd ec2-instance-manager-server
+   ```
+
+2. Initialize Terraform:
    ```bash
    terraform init
    ```
 
-2. Review the infrastructure plan:
+3. Review the infrastructure plan:
    ```bash
    terraform plan
    ```
 
-3. Deploy the infrastructure:
+4. Deploy the infrastructure:
    ```bash
    terraform apply
    ```
