@@ -3,9 +3,9 @@
 A web application for managing AWS EC2 instances.
 After the completion of this setup, you will have a web application for stoping, starting and checking the status of AWS EC2 instances.
 
-One of the benefit of this web application is the ability to stop the EC2 instance when it is not in use. This will help you save money on AWS. Therefore, if you have an EC2 instance that does not require 100% availability, you can stop it when it is not in use and start it when you need it.
+One of the benefit of this web application is the ability to stop the EC2 instances when they are not in use. This will help you save money on AWS. Therefore, if you have an EC2 instance that does not require 100% availability, you can stop it when it is not in use and start it when you need it directly from the web application.
 
-The web application is itself hosted on an EC2 instance in the AWS Free Tier (zero cost). A Terraform script is used to create the infrastructure and the application is deployed on the instance.
+The web application is itself hosted on a EC2 instance using a lite and low cost Ubuntu Linux image. A Terraform script is used to create the infrastructure and the application is deployed on the instance.
 
 Please ensure you have the AWS access keys for the account that is used to create the target EC2 instance.
 
@@ -15,6 +15,7 @@ Please ensure you have the AWS access keys for the account that is used to creat
 ``` text
 ├── ec2-instance-manager-app
 │   ├── app.py
+│   ├── aws_cli_utils.py
 │   ├── requirements.txt
 │   └── templates
 │       └── index.html
@@ -167,6 +168,18 @@ The web application should now be available at `http://<public-ip>`.
 To control another EC2 instance, Expand the "Add New Configuration" section and enter the instance_id of the target EC2 machine and click on the "Start" or "Stop" button. Watch the log and the status bar change to reflect the current status of the target EC2 instance.
 
 Alternatively, if the instance_id is saved in an S3 object, you can provide the bucket name and the object key and the content will be automatically fetched - this assumes the S3 bucket is in the same AWS account as the EC2 instance.
+
+
+### Using CLI
+
+You can also use the CLI to start, stop and check the status of the EC2 instances. Run the following command to execute actions against your target EC2 instance:
+
+```bash
+python3.10 aws_cli_utils.py <action> <instance-id>
+```
+Where `<action>` is one of the following: `start`, `stop`, `status`.
+
+Ensure you are in the `ec2-instance-manager-app` directory and have the AWS credentials set in your environment variables.
 
 
 ## License
