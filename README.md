@@ -85,31 +85,35 @@ Once the infrastructure is deployed, you can connect to the EC2 instance using t
 
 ## Application Deployment (ec2-instance-manager-app)
 Now that you have connected to the EC2 instance, you can deploy the application.
-Please note that the application is assigned to the port 4999. This is to avoid conflicts with other application that might be using the default Flask port 5000.
+Please note that the application will be assigned to the port 4999. This is to avoid conflicts with other application that might be using the default Flask port 5000.
 
-1. The first step is to clone the repository in host machine and install the dependencies.
+1. The first step is to clone the repository in the host machine.
    ```bash
    git clone https://github.com/ife0042/ec2-instance-manager.git
+   ```
+
+2. Change directory to the ec2-instance-manager-app directory:
+   ```bash
    cd ec2-instance-manager/ec2-instance-manager-app
    ```
 
-2. Install and upgrade system packages:
+3. Install and upgrade system packages:
    ```bash
    sudo apt update && sudo apt upgrade -y
    ```
 
-3. Reboot the system:
+4. Reboot the system:
    ```bash
    sudo reboot
    ```
 
-4. Install Python, pip, venv and nginx:
+5. Install Python, pip, venv and nginx:
 Nginx is used to serve the application and venv is used to create a virtual environment for the application.
    ```bash
    sudo apt install python3.10 python3-pip python3.10-venv nginx -y
    ```
 
-5. Set the AWS secret keys as environment variables in the host machine:
+6. Set the AWS secret keys as environment variables in the host machine:
    ```bash
    export AWS_ACCESS_KEY_ID=xxxxxxxxx
    export AWS_SECRET_ACCESS_KEY=xxxxxxxxx
