@@ -77,8 +77,7 @@ After successful deployment, you'll find two new files in the `ec2-instance-mana
 - `ec2-instance-manager-key.pem` for SSH access to the instance
 
 ## Connect to the EC2 instance
-
-Once the infrastructure is deployed, you can connect to the EC2 instance using the following command:
+Once the infrastructure is deployed, you can connect to the EC2 instance using the following command (ensure you are in the `ec2-instance-manager-server` directory):
    ```bash
    ssh -i ec2-instance-manager-key.pem ubuntu@$(cat public_ip.txt)
    ```
@@ -92,38 +91,27 @@ Please note that the application will be assigned to the port 4999. This is to a
    git clone https://github.com/ife0042/ec2-instance-manager.git
    ```
 
-2. Change directory to the ec2-instance-manager-app directory:
-   ```bash
-   cd ec2-instance-manager/ec2-instance-manager-app
-   ```
-
-3. Install and upgrade system packages:
+2. Install and upgrade system packages:
    ```bash
    sudo apt update && sudo apt upgrade -y
    ```
 
-4. Reboot the system:
+3. Reboot the system to ensure the system is up to date. Refer to the "Connect to the EC2 instance" section on how to connect back to the EC2 instance.
    ```bash
    sudo reboot
    ```
 
-5. Install Python, pip, venv and nginx:
+4. Install Python, pip, venv and nginx:
 Nginx is used to serve the application and venv is used to create a virtual environment for the application.
    ```bash
    sudo apt install python3.10 python3-pip python3.10-venv nginx -y
    ```
 
-6. Set the AWS secret keys as environment variables in the host machine:
+5. Set the AWS secret keys as environment variables in the host machine:
    ```bash
    export AWS_ACCESS_KEY_ID=xxxxxxxxx
    export AWS_SECRET_ACCESS_KEY=xxxxxxxxx
    ```
-
-<!-- 8. UFW (Ubuntu Firewall): Allow traffic on port 4999:
-   ```bash
-   sudo ufw allow 4999
-   ``` -->
-   <!-- sudo apt install gunicorn -->
 
 6. Create a new Nginx configuration file:
    ```bash
@@ -176,7 +164,9 @@ https://flask.palletsprojects.com/en/stable/deploying/gunicorn/
 
 ### Access the application
 The web application should now be available at `http://<public-ip>`.
-To control another EC2 instance, enter the instance_id of the target EC2 machine and click on the "Start" or "Stop" button. Watch the log and the status bar change to reflect the curretn status of the target EC2 instance.
+To control another EC2 instance, Expand the "Add New Configuration" section and enter the instance_id of the target EC2 machine and click on the "Start" or "Stop" button. Watch the log and the status bar change to reflect the current status of the target EC2 instance.
+
+Alternatively, if the instance_id is saved in an S3 object, you can provide the bucket name and the object key and the content will be automatically fetched - this assumes the S3 bucket is in the same AWS account as the EC2 instance.
 
 
 ## License

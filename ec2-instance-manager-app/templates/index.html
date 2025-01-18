@@ -179,7 +179,6 @@
             }
 
             function updateStatus(message="") {
-
                 document.getElementById('instance-status').classList.remove('d-none');
                 if (!INSTANCE_ID) {
                     document.getElementById('instance-status').classList.add('d-none');
@@ -187,7 +186,7 @@
                     addLogEntry('No instance ID selected', 'failed');
                     return;
                 }
-                document.getElementById('instance-status-info').textContent = message;
+                document.getElementById('instance-status-info').textContent = message||"";
                 fetch(`/api/status/${INSTANCE_ID}`)
                     .then(response => response.json())
                     .then(data => {
@@ -277,7 +276,9 @@
                     });
             });
 
-            document.getElementById('refresh-btn').addEventListener('click', updateStatus);
+            document.getElementById('refresh-btn').addEventListener('click', (e) => {
+                updateStatus();
+            });
 
             // Configuration management
             const configType = document.getElementsByName('configType');
